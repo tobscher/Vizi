@@ -1,5 +1,5 @@
 /**
- *
+ * @author Tony Parisi
  */
 goog.require('Vizi.Service');
 goog.provide('Vizi.EventService');

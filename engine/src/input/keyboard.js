@@ -1,5 +1,5 @@
 /**
- *
+ * @author Tony Parisi
  */
 goog.provide('Vizi.Keyboard');
 
