@@ -1,0 +1,17 @@
+{
+  "name": "Vizi",
+  "version": "0.1.0",
+  "description": "A Component-Based Framework for Visual Web Applications.",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/tparisi/Vizi.git"
+  },
+  "author": "Tony Parisi",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/tparisi/Vizi/issues"
+  },
+  "devDependencies": {
+    "grunt": "~0.4.5"
+  }
+}
