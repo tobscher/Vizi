@@ -56,25 +56,40 @@ Vizi.EventDispatcher.prototype.removeEventListener =  function(type, listener) {
     }
 }
 
-Vizi.EventDispatcher.prototype.dispatchEvent = function(type) {
-    var listeners = this.eventTypes[type];
+Vizi.EventDispatcher.prototype.bufferedDispatchEvent = function(type, buffered) {
+  buffered = (buffered !== undefined) ? buffered : true;
+  var force = !buffered;
 
-    if (listeners)
+  var listeners = this.eventTypes[type];
+
+  if (listeners)
+  {
+    var now = Vizi.Time.instance.currentTime;
+
+    if (force || this.timestamps[type] < now)
     {
-    	var now = Vizi.Time.instance.currentTime;
-    	
-    	if (this.timestamps[type] < now)
-    	{
-    		this.timestamps[type] = now;
-	    	Vizi.EventService.eventsPending = true;
-	    	
-    		[].shift.call(arguments);
-	    	for (var i = 0; i < listeners.length; i++)
-	        {
-                listeners[i].apply(this, arguments);
-	        }
-    	}
+      this.timestamps[type] = now;
+      Vizi.EventService.eventsPending = true;
+
+      var itemsToRemove = force ? 2 : 1;
+
+      [].splice.call(arguments, 0, itemsToRemove);
+      for (var i = 0; i < listeners.length; i++)
+        {
+              listeners[i].apply(this, arguments);
+        }
     }
+  }
+};
+
+Vizi.EventDispatcher.prototype.dispatchEvent = function(type) {
+  this.bufferedDispatchEvent.apply(this, arguments);
+}
+
+Vizi.EventDispatcher.prototype.forceDispatchEvent = function(type) {
+  // Add another argument to disable buffer
+  [].splice.call(arguments,1,0,false);
+  this.bufferedDispatchEvent.apply(this, arguments);
 }
 
 Vizi.EventDispatcher.prototype.hasEventListener = function (subscribers, subscriber) {

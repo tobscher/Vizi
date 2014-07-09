@@ -70,7 +70,7 @@ Vizi.Loader.prototype.handleModelLoaded = function(url, userData, geometry, mate
 
 	var result = { scene : obj, cameras: [], lights: [], keyFrameAnimators:[] , userData: userData };
 	
-	this.dispatchEvent("loaded", result);
+	this.forceDispatchEvent("loaded", result);
 }
 
 Vizi.Loader.prototype.loadScene = function(url, userData)
