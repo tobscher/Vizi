@@ -146,6 +146,8 @@ Vizi.GraphicsThreeJS.prototype.initMouse = function()
 			function(e) { that.onDocumentMouseDown(e); }, false );
 	dom.addEventListener( 'mouseup', 
 			function(e) { that.onDocumentMouseUp(e); }, false ); 
+	dom.addEventListener( 'mouseleave',
+			function(e) { that.onDocumentMouseLeave(e); }, false );
  	dom.addEventListener( 'click', 
 			function(e) { that.onDocumentMouseClick(e); }, false );
 	dom.addEventListener( 'dblclick', 
@@ -402,6 +404,24 @@ Vizi.GraphicsThreeJS.prototype.onDocumentMouseMove = function(event)
     
     Vizi.Application.handleMouseMove(evt);
 }
+
+Vizi.GraphicsThreeJS.prototype.onDocumentMouseLeave = function(event) {
+  event.preventDefault();
+
+  var offset = {};
+  this.calcElementOffset(offset);
+
+  var eltx = event.pageX - offset.left;
+  var elty = event.pageY - offset.top;
+
+  var evt = { type : event.type, pageX : event.pageX, pageY : event.pageY, 
+    elementX : eltx, elementY : elty, button:event.button, altKey:event.altKey,
+    ctrlKey:event.ctrlKey, shiftKey:event.shiftKey };
+
+  Vizi.Mouse.instance.onMouseLeave(evt);
+
+  Vizi.Application.handleMouseLeave(evt);
+};
 
 Vizi.GraphicsThreeJS.prototype.onDocumentMouseDown = function(event)
 {

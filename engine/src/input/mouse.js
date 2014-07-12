@@ -13,6 +13,7 @@ Vizi.Mouse = function()
 
 	buttons : { left : false, middle : false, right : false },
 	scroll : 0,
+  insideContainer: false
 	};
 
 	Vizi.Mouse.instance = this;
@@ -22,6 +23,7 @@ Vizi.Mouse.prototype.onMouseMove = function(event)
 {
     this.state.x = event.elementX;
     this.state.y = event.elementY;	            
+    this.state.insideContainer = true;
 }
 
 Vizi.Mouse.prototype.onMouseDown = function(event)
@@ -29,6 +31,7 @@ Vizi.Mouse.prototype.onMouseDown = function(event)
     this.state.x = event.elementX;
     this.state.y = event.elementY;	            
     this.state.buttons.left = true;
+    this.state.insideContainer = true;
 }
 
 Vizi.Mouse.prototype.onMouseUp = function(event)
@@ -36,6 +39,12 @@ Vizi.Mouse.prototype.onMouseUp = function(event)
     this.state.x = event.elementX;
     this.state.y = event.elementY;	            
     this.state.buttons.left = false;	            
+    this.state.insideContainer = true;
+}
+
+Vizi.Mouse.prototype.onMouseLeave = function(event)
+{
+    this.state.insideContainer = false;
 }
 
 Vizi.Mouse.prototype.onMouseClick = function(event)
@@ -43,6 +52,7 @@ Vizi.Mouse.prototype.onMouseClick = function(event)
     this.state.x = event.elementX;
     this.state.y = event.elementY;	            
     this.state.buttons.left = false;	            
+    this.state.insideContainer = true;
 }
 
 Vizi.Mouse.prototype.onMouseDoubleClick = function(event)
@@ -50,6 +60,7 @@ Vizi.Mouse.prototype.onMouseDoubleClick = function(event)
     this.state.x = event.elementX;
     this.state.y = event.elementY;	            
     this.state.buttons.left = false;	            
+    this.state.insideContainer = true;
 }
 
 Vizi.Mouse.prototype.onMouseScroll = function(event, delta)

@@ -196,6 +196,14 @@ Vizi.Application.prototype.onMouseScroll = function(event)
 	}
 }
 
+Vizi.Application.prototype.onMouseLeave = function(event)
+{
+	if (this.mouseDelegate && this.mouseDelegate.onMouseLeave)
+	{
+		this.mouseDelegate.onMouseLeave(event);
+	}
+}
+
 Vizi.Application.prototype.onKeyDown = function(event)
 {
 	if (this.keyboardDelegate && this.keyboardDelegate.onKeyDown)
@@ -282,6 +290,15 @@ Vizi.Application.handleMouseScroll = function(event)
     
     if (Vizi.Application.instance.onMouseScroll)
     	Vizi.Application.instance.onMouseScroll(event);	            	
+}
+
+Vizi.Application.handleMouseLeave = function(event)
+{
+  if (Vizi.PickManager && Vizi.PickManager.overObject)
+    return;
+
+  if (Vizi.Application.instance.onMouseLeave)
+    Vizi.Application.instance.onMouseLeave(event);
 }
 
 Vizi.Application.handleTouchStart = function(event)
