@@ -9,6 +9,25 @@ goog.provide('Vizi.GraphicsThreeJS');
 Vizi.GraphicsThreeJS = function()
 {
 	Vizi.Graphics.call(this);
+
+  Object.defineProperties(this, {
+    camera: {
+      get: function() {
+        return this.mainLayer.camera;
+      },
+      set: function(v) {
+        this.mainLayer.camera = v;
+      }
+    },
+    scene: {
+      get: function() {
+        return this.mainLayer.scene;
+      },
+      set: function(v) {
+        this.mainLayer.scene = v;
+      }
+    }
+  });
 }
 
 goog.inherits(Vizi.GraphicsThreeJS, Vizi.Graphics);
@@ -16,6 +35,8 @@ goog.inherits(Vizi.GraphicsThreeJS, Vizi.Graphics);
 Vizi.GraphicsThreeJS.prototype.initialize = function(param)
 {
 	param = param || {};
+
+  this.layers = [];
 	
 	// call all the setup functions
 	this.initOptions(param);
@@ -76,29 +97,82 @@ Vizi.GraphicsThreeJS.prototype.initPageElements = function(param)
 
 Vizi.GraphicsThreeJS.prototype.initScene = function()
 {
-    var scene = new THREE.Scene();
+  var scene = new THREE.Scene();
 
-//    scene.add( new THREE.AmbientLight(0xffffff) ); //  0x505050 ) ); // 
-	
-    var camera = new THREE.PerspectiveCamera( 45, 
+  // Background
+  var backgroundCamera = new THREE.PerspectiveCamera( 45,
+      this.container.offsetWidth / this.container.offsetHeight, 0.01, 10000 );
+  this.backgroundLayer = this.addLayer("backgroundLayer", backgroundCamera, {
+    scene: scene,
+    clearColor: {color:0, alpha:0},
+    autoClearColor: true,
+    position: new THREE.Vector3(0,0,10)
+  });
+
+  // Main
+  var camera = new THREE.PerspectiveCamera( 45,
     		this.container.offsetWidth / this.container.offsetHeight, 1, 10000 );
-    camera.position.copy(Vizi.Camera.DEFAULT_POSITION);
+  this.mainLayer = this.addLayer("main", camera, {
+    scene: scene,
+    position: Vizi.Camera.DEFAULT_POSITION,
+    clearColor: {color:0, alpha:1},
+    autoClearColor: false,
+    clear: true
+  });
+};
 
-    scene.add(camera);
-    
-    this.scene = scene;
-	this.camera = camera;
-	
-	this.backgroundLayer = {};
+Vizi.GraphicsThreeJS.prototype.addLayer = function(name, camera, options) {
+  options = options || {};
+  var layer = {};
+
+  if (options.scene !== undefined) {
+    var scene = options.scene;
+  } else {
     var scene = new THREE.Scene();
-    var camera = new THREE.PerspectiveCamera( 45, 
-    		this.container.offsetWidth / this.container.offsetHeight, 0.01, 10000 );
-    camera.position.set( 0, 0, 10 );	
-    scene.add(camera);
-    
-    this.backgroundLayer.scene = scene;
-    this.backgroundLayer.camera = camera;
-}
+  }
+
+  // Position
+  if (options.position !== undefined) {
+    camera.position.copy(options.position);
+  }
+
+  // Up
+  if (options.up !== undefined) {
+    camera.up = options.up;
+  }
+
+  // LookAt
+  if (options.lookAt !== undefined) {
+    camera.lookAt(options.lookAt);
+  }
+
+  // Clear Color
+  if (options.clearColor !== undefined) {
+    layer.clearColor = options.clearColor;
+  }
+
+  if (options.autoClearColor !== undefined) {
+    layer.autoClearColor = options.autoClearColor;
+  }
+
+  if (options.viewport !== undefined) {
+    layer.viewport = options.viewport;
+  }
+
+  if (options.clear !== undefined) {
+    layer.clear = options.clear;
+  }
+
+  scene.add(camera);
+
+  layer.scene = scene;
+  layer.camera = camera;
+  layer.name = name;
+
+  this.layers.push(layer);
+
+  return layer;
+};
 
 Vizi.GraphicsThreeJS.prototype.initRenderer = function(param)
 {
@@ -133,7 +207,7 @@ Vizi.GraphicsThreeJS.prototype.initRenderer = function(param)
     if (param.riftRender) {
     	  this.riftCam = new THREE.OculusRiftEffect(this.renderer);	
     }
-}
+};
 
 Vizi.GraphicsThreeJS.prototype.initMouse = function()
 {
@@ -714,12 +788,29 @@ Vizi.GraphicsThreeJS.prototype.update = function()
 	    return;
 	}
 	
-    this.renderer.setClearColor( 0, 0 );
-	this.renderer.autoClearColor = true;
-    this.renderer.render( this.backgroundLayer.scene, this.backgroundLayer.camera );
-    this.renderer.setClearColor( 0, 1 );
-	this.renderer.autoClearColor = false;
-    this.renderer.render( this.scene, this.camera );
+  for (i = 0; i < this.layers.length; i++) {
+    var layer = this.layers[i];
+
+    if (layer.clearColor) {
+      this.renderer.setClearColor(layer.clearColor.color, layer.clearColor.alpha);
+    }
+
+    if (layer.autoClearColor !== undefined) {
+      this.renderer.autoClearColor = layer.autoClearColor;
+    }
+
+    if (layer.viewport) {
+      this.renderer.setViewport(layer.viewport.x, layer.viewport.y, layer.viewport.width, layer.viewport.height);
+    } else {
+      this.renderer.setViewport(0, 0, this.container.clientWidth, this.container.clientHeight);
+    }
+
+    if (layer.clear) {
+      this.renderer.clear();
+    }
+
+    this.renderer.render(layer.scene, layer.camera);
+  }
 
     var frameTime = Date.now();
     var deltat = (frameTime - this.lastFrameTime) / 1000;
@@ -731,7 +822,7 @@ Vizi.GraphicsThreeJS.prototype.update = function()
     {
     	this.stats.update();
     }
-}
+};
 
 Vizi.GraphicsThreeJS.prototype.enableShadows = function(enable)
 {
