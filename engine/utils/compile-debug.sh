@@ -1,13 +1,13 @@
 BUILDDIR=../build
 TARGET="$BUILDDIR/vizi-nodeps.js"
 OUTPUT="$BUILDDIR/vizi.js"
-THREE=../libs/three.js.r66/three.js
-STATS=../libs/three.js.r66/stats.min.js
-LOADERS="../libs/three.js.r66/loaders/ColladaLoader.js \
-../libs/three.js.r66/loaders/glTF/glTF-parser.js \
-../libs/three.js.r66/loaders/glTF/glTFLoader.js \
-../libs/three.js.r66/loaders/glTF/glTFLoaderUtils.js \
-../libs/three.js.r66/loaders/glTF/glTFAnimation.js \
+THREE=../libs/three.js.r68/three.js
+STATS=../libs/three.js.r68/stats.min.js
+LOADERS="../libs/three.js.r68/loaders/ColladaLoader.js \
+../libs/three.js.r68/loaders/glTF/glTF-parser.js \
+../libs/three.js.r68/loaders/glTF/glTFLoader.js \
+../libs/three.js.r68/loaders/glTF/glTFLoaderUtils.js \
+../libs/three.js.r68/loaders/glTF/glTFAnimation.js \
 ../libs/oculus/OculusBridge.js \
 ../libs/oculus/RiftCamera.js \
 ../libs/oculus/vr.js"
