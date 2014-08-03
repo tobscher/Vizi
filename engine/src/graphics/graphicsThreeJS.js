@@ -105,7 +105,7 @@ Vizi.GraphicsThreeJS.prototype.initScene = function()
   this.backgroundLayer = this.addLayer("backgroundLayer", backgroundCamera, {
     scene: scene,
     clearColor: {color:0, alpha:0},
-    autoClearColor: true,
+    // autoClearColor: true,
     position: new THREE.Vector3(0,0,10)
   });
 
@@ -116,8 +116,8 @@ Vizi.GraphicsThreeJS.prototype.initScene = function()
     scene: scene,
     position: Vizi.Camera.DEFAULT_POSITION,
     clearColor: {color:0, alpha:1},
-    autoClearColor: false,
-    clear: true
+    // autoClearColor: false,
+    // clear: true
   });
 };
 
@@ -801,9 +801,13 @@ Vizi.GraphicsThreeJS.prototype.update = function()
 
     if (layer.viewport) {
       this.renderer.setViewport(layer.viewport.x, layer.viewport.y, layer.viewport.width, layer.viewport.height);
+      this.renderer.setScissor(layer.viewport.x, layer.viewport.y, layer.viewport.width, layer.viewport.height);
     } else {
       this.renderer.setViewport(0, 0, this.container.clientWidth, this.container.clientHeight);
+      this.renderer.setScissor(0, 0, this.container.clientWidth, this.container.clientHeight);
     }
+
+    this.renderer.enableScissorTest(true);
 
     if (layer.clear) {
       this.renderer.clear();
