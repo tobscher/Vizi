@@ -3,6 +3,7 @@
  * 
  * @author Tony Parisi
  */
+goog.require('Vizi.Layer');
 goog.require('Vizi.Graphics');
 goog.provide('Vizi.GraphicsThreeJS');
 
@@ -36,8 +37,6 @@ Vizi.GraphicsThreeJS.prototype.initialize = function(param)
 {
 	param = param || {};
 
-  this.layers = [];
-	
 	// call all the setup functions
 	this.initOptions(param);
 	this.initPageElements(param);
@@ -123,13 +122,13 @@ Vizi.GraphicsThreeJS.prototype.initScene = function()
 
 Vizi.GraphicsThreeJS.prototype.addLayer = function(name, camera, options) {
   options = options || {};
-  var layer = {};
-
   if (options.scene !== undefined) {
     var scene = options.scene;
   } else {
     var scene = new THREE.Scene();
   }
+
+  var layer = new Vizi.Layer(name, camera, scene, options);
 
   // Position
   if (options.position !== undefined) {
@@ -165,12 +164,6 @@ Vizi.GraphicsThreeJS.prototype.addLayer = function(name, camera, options) {
 
   scene.add(camera);
 
-  layer.scene = scene;
-  layer.camera = camera;
-  layer.name = name;
-
-  this.layers.push(layer);
-
   return layer;
 };
 
@@ -188,6 +181,7 @@ Vizi.GraphicsThreeJS.prototype.initRenderer = function(param)
     	
     renderer.sortObjects = false;
     renderer.setSize( this.container.offsetWidth, this.container.offsetHeight );
+    renderer.autoClear = false;
 
     if (param && param.backgroundColor)
     {
@@ -263,46 +257,53 @@ Vizi.GraphicsThreeJS.prototype.addDomHandlers = function()
 	window.addEventListener( 'resize', function(event) { that.onWindowResize(event); }, false );
 }
 
-Vizi.GraphicsThreeJS.prototype.objectFromMouse = function(event)
-{
-	var eltx = event.elementX, elty = event.elementY;
-	
-	// translate client coords into vp x,y
-    var vpx = ( eltx / this.container.offsetWidth ) * 2 - 1;
-    var vpy = - ( elty / this.container.offsetHeight ) * 2 + 1;
-    
+Vizi.GraphicsThreeJS.prototype.objectFromMouse = function(event) {
+  for (var i = Vizi.Layer.instances.length - 1; i >= 0; i--) {
+    var layer = Vizi.Layer.instances[i];
+
+    var width = layer.width || this.container.offsetWidth;
+    var height = layer.height || this.container.offsetHeight;
+
+    var eltx = event.elementX,
+      elty = event.elementY;
+
+    if (layer.viewport) {
+      eltx -= layer.x;
+      elty -= (this.container.offsetHeight - layer.height - layer.y);
+    }
+
+    // translate client coords into vp x,y
+    var vpx = ( eltx / width ) * 2 - 1;
+    var vpy = - ( elty / height ) * 2 + 1;
     var vector = new THREE.Vector3( vpx, vpy, 0.5 );
 
-    this.projector.unprojectVector( vector, this.camera );
-	
-    var pos = new THREE.Vector3;
-    pos = pos.applyMatrix4(this.camera.matrixWorld);
-	
-    var raycaster = new THREE.Raycaster( pos, vector.sub( pos ).normalize() );
+    if (layer.camera instanceof THREE.PerspectiveCamera) {
+      this.projector.unprojectVector( vector, layer.camera );
+      var pos = new THREE.Vector3;
+      pos = pos.applyMatrix4(layer.camera.matrixWorld);
+      var ray = new THREE.Raycaster( pos, vector.sub( pos ).normalize() );
+    } else {
+      // Orthographic
+      var ray = this.projector.pickingRay(vector, layer.camera);
+    }
 
-	var intersects = raycaster.intersectObjects( this.scene.children, true );
-	
+    var intersects = ray.intersectObjects( layer.scene.children, true );
+
     if ( intersects.length > 0 ) {
-    	var i = 0;
-    	while(i < intersects.length && (!intersects[i].object.visible || 
-    			intersects[i].object.ignorePick))
-    	{
-    		i++;
-    	}
-    	
-    	var intersected = intersects[i];
-    	
-    	if (i >= intersects.length)
-    	{
-        	return { object : null, point : null, normal : null };
-    	}
-    	
-    	return (this.findObjectFromIntersected(intersected.object, intersected.point, intersected.face));        	    	                             
+      var j = 0;
+      while(j < intersects.length && (!intersects[j].object.visible ||
+          intersects[j].object.ignorePick))
+      {
+        j++;
+      }
+
+      var intersected = intersects[j];
+
+      return (this.findObjectFromIntersected(intersected.object, intersected.point, intersected.face));
     }
-    else
-    {
-    	return { object : null, point : null, normal : null };
-    }
+  }
+
+  return { object : null, point : null, normal : null };
 }
 
 Vizi.GraphicsThreeJS.prototype.objectFromRay = function(hierarchy, origin, direction, near, far)
@@ -788,8 +789,8 @@ Vizi.GraphicsThreeJS.prototype.update = function()
 	    return;
 	}
 	
-  for (i = 0; i < this.layers.length; i++) {
-    var layer = this.layers[i];
+  for (i = 0; i < Vizi.Layer.instances.length; i++) {
+    var layer = Vizi.Layer.instances[i];
 
     if (layer.clearColor) {
       this.renderer.setClearColor(layer.clearColor.color, layer.clearColor.alpha);
