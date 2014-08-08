@@ -9,14 +9,37 @@ Vizi.Layer = function(name, camera, scene, options) {
   this.options = options;
 
   if (options.viewport !== undefined) {
-    this.viewport = options.viewport;
-    this.width = options.viewport.width;
-    this.height = options.viewport.height;
-    this.x = options.viewport.x;
-    this.y = options.viewport.y;
+    this.setViewport(options.viewport.x, options.viewport.y, options.viewport.width, options.viewport.height);
   }
 
   Vizi.Layer.instances.push(this);
+};
+
+Vizi.Layer.prototype.onWindowResize = function(width, height) {
+  this.setAspectRatio(width, height);
+  this.updateMatrix();
+};
+
+Vizi.Layer.prototype.setAspectRatio = function(width, height) {
+  this.camera.aspect = width / height;
+};
+
+Vizi.Layer.prototype.updateMatrix = function() {
+  this.camera.updateProjectionMatrix();
+};
+
+Vizi.Layer.prototype.setViewport = function(x, y, width, height) {
+  this.viewport = {
+    x: x,
+    y: y,
+    width: width,
+    height: height
+  };
+
+  this.width = width;
+  this.height = height;
+  this.x = x;
+  this.y = y;
 };
 
 Vizi.Layer.instances = [];

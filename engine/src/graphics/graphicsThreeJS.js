@@ -755,18 +755,14 @@ Vizi.GraphicsThreeJS.prototype.onKeyPress = function(event)
 	Vizi.Application.handleKeyPress(event);
 }
 
-Vizi.GraphicsThreeJS.prototype.onWindowResize = function(event)
+Vizi.GraphicsThreeJS.prototype.onWindowResize = function(e)
 {
-	this.renderer.setSize(this.container.offsetWidth, this.container.offsetHeight);
+  this.renderer.setSize(this.container.offsetWidth, this.container.offsetHeight);
 
-	if (Vizi.CameraManager && Vizi.CameraManager.handleWindowResize(this.container.offsetWidth, this.container.offsetHeight))
-	{		
-	}
-	else
-	{
-		this.camera.aspect = this.container.offsetWidth / this.container.offsetHeight;
-		this.camera.updateProjectionMatrix();
-	}
+  for (var i = 0; i < Vizi.Layer.instances.length; i++) {
+    var layer = Vizi.Layer.instances[i];
+    layer.onWindowResize(this.container.offsetWidth, this.container.offsetHeight);
+  }
 }
 
 Vizi.GraphicsThreeJS.prototype.setCursor = function(cursor)
